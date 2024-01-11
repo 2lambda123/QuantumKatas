@@ -9,11 +9,18 @@
 //////////////////////////////////////////////////////////////////////
 
 namespace Quantum.Kata.GroversAlgorithm {
+    // Namespace for Grover's Algorithm
+
+    // Importing required libraries
+    open Microsoft.Quantum.Arrays;
+    open Microsoft.Quantum.Intrinsic;
+    open Microsoft.Quantum.Canon;
     
     open Microsoft.Quantum.Arrays;
     open Microsoft.Quantum.Intrinsic;
     open Microsoft.Quantum.Canon;
-    open Microsoft.Quantum.Math;
+    // Importing the Math library
+    // The Math library is already imported in the previous section, so no additional import is necessary.
 
     
     //////////////////////////////////////////////////////////////////
@@ -29,6 +36,8 @@ namespace Quantum.Kata.GroversAlgorithm {
     // Task 1.2. The |1010...⟩ oracle
     operation Oracle_AlternatingBits_Reference (queryRegister : Qubit[], target : Qubit) : Unit
     is Adj {
+        // flip the bits in odd (0-based positions),
+        // so that the condition for flipping the state of the target qubit is "query register is in 1...1 state"
         
         within {
             // flip the bits in odd (0-based positions),
@@ -52,6 +61,7 @@ namespace Quantum.Kata.GroversAlgorithm {
     // Task 1.4*. Oracle converter
     operation OracleConverterImpl_Reference (markingOracle : ((Qubit[], Qubit) => Unit is Adj), register : Qubit[]) : Unit is Adj {
         use target = Qubit();
+        // Define the oracle for an arbitrary bit pattern
         within {
             // Put the target into the |-⟩ state
             X(target);
@@ -77,6 +87,7 @@ namespace Quantum.Kata.GroversAlgorithm {
     // Task 2.1. The Hadamard transform
     operation HadamardTransform_Reference (register : Qubit[]) : Unit is Adj {
         
+        // Apply Hadamard gate to each qubit in the register
         ApplyToEachA(H, register);
 
         // ApplyToEach is a library routine that is equivalent to the following code:
@@ -89,6 +100,7 @@ namespace Quantum.Kata.GroversAlgorithm {
     // Task 2.2. Conditional phase flip
     operation ConditionalPhaseFlip_Reference (register : Qubit[]) : Unit is Adj {
         // Define a marking oracle which detects an all zero state
+        // Convert it into a phase-flip oracle and apply it
         let allZerosOracle = Oracle_ArbitraryPattern_Reference(_, _, [false, size = Length(register)]);
             
         // Convert it into a phase-flip oracle and apply it
@@ -102,13 +114,15 @@ namespace Quantum.Kata.GroversAlgorithm {
     
     
     operation PhaseFlip_ControlledZ (register : Qubit[]) : Unit is Adj {
-        // Alternative solution, described at https://quantumcomputing.stackexchange.com/questions/4268/how-to-construct-the-inversion-about-the-mean-operator/4269#4269
+        // Define the phase flip operation using controlled Z gate
+        // Apply X gate to each qubit in the register
         within {
             ApplyToEachA(X, register);
         } apply {
             Controlled Z(Most(register), Tail(register));
         }
         // To fix the global phase difference, use the following line :
+        // Add a global phase of PI by rotating the qubit by 𝜃/2
         R(PauliI, 2.0 * PI(), register[0]); // Note : We used 2*PI to add a global phase of PI, as R operation rotates qubit by 𝜃/2
         // For more details refer to the following Quantum SE question : https://quantumcomputing.stackexchange.com/questions/5973/counting-in-q-number-of-solutions/6446#6446
     }
